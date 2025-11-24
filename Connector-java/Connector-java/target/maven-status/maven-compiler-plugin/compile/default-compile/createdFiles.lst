@@ -1,0 +1,4 @@
+com\its\statistics\ConnectorJavaApplication.class
+com\its\statistics\repository\StudentRepository.class
+com\its\statistics\controller\StudentController.class
+com\its\statistics\model\Student.class
