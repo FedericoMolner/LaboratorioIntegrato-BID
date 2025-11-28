@@ -18,3 +18,5 @@ ENV JAVA_OPTS="-Xms256m -Xmx512m"
 EXPOSE 8080
 
 ENTRYPOINT ["sh", "-lc", "if [ -n \"$GOOGLE_CREDENTIALS_JSON\" ]; then echo \"$GOOGLE_CREDENTIALS_JSON\" > /tmp/gcp-creds.json; export GOOGLE_CREDENTIALS_FILE=/tmp/gcp-creds.json; fi; exec java $JAVA_OPTS -jar /app/app.jar --google.credentials.path=${GOOGLE_CREDENTIALS_FILE:-} --connector.mode=${connector.mode:-LOCAL}"]
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
