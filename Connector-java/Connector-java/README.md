@@ -75,7 +75,7 @@ mvn spring-boot:run -Dspring-boot.run.arguments="--connector.mode=BIGQUERY --goo
 
 Student CRUD (usati da applicazioni e interfaccia):
 - GET  /students — restituisce tutti gli studenti
-- GET  /students/{id} — restituisce il singolo studente
+- GET  /students/{id} — restituisce uno studente specifico tramite ID.
 - POST /students — crea uno studente (body JSON: name/surname/email)
 - PUT  /students/{id} — aggiorna lo studente
 - DELETE /students/{id} — elimina lo studente
@@ -293,7 +293,7 @@ Quando `connector.mode=LOCAL`, i test useranno un database H2 in memoria e non r
 
 ## Metodi di sviluppo rapidi e debug
 - Per eseguire in background su Windows: `start-server.ps1` (fornisce un esempio di start e attende il messaggio 'Started').
-- Verifica l'health endpoint: `GET /api/students/health`.
+- Verifica l'health endpoint: `GET /students/health`.
 
 ---
 
@@ -358,12 +358,12 @@ La console del database H2 è disponibile per la gestione dei dati locali:
 -   **Password:** (lasciare vuoto se non specificata)
 
 ### Endpoints REST API
-Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/students`:
+Gli endpoint per la gestione degli studenti sono disponibili sotto `/students`:
 
--   **GET /api/students**: Recupera tutti gli studenti.
+-   **GET /students**: Recupera tutti gli studenti.
     -   **Esempio di chiamata con JavaScript (fetch):**
         ```javascript
-        fetch('http://localhost:8080/api/students')
+        fetch('http://localhost:8080/students')
             .then(response => response.json())
             .then(data => console.log('Elenco studenti:', data))
             .catch(err => console.error('Errore:', err));
@@ -390,6 +390,20 @@ Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/student
         [
           {
             "id": 1,
+
+        ---
+
+        ## Docker & CI / CD
+        Se preferisci un'immagine container e GitHub Actions per build & publish, è incluso un workflow in `.github/workflows/ci-cd.yml` che:
+        - costruisce il progetto (Maven)
+        - esegue test
+        - costruisce e pubblica l'immagine su GitHub Container Registry (GHCR)
+
+        Sotto `scripts/` troverai utility per test locali e per costruire/pushare l'immagine:
+        - `scripts/run-local.sh` / `scripts/run-local.bat` — build+run con Docker in LOCAL mode
+        - `scripts/build-and-push.sh` / `.bat` — build + push su GHCR (usa env GITHUB_TOKEN)
+
+        Render supporta deploy da Dockerfile o immagine pubblicata su registry: puoi configurarlo per usare la nostra `Dockerfile` o impostare la 'Image' su ghcr.io/<owner>/connector-java:latest.
             "name": "Mario",
             "surname": "Rossi",
             "email": "mario.rossi@example.com"
@@ -402,7 +416,7 @@ Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/student
           }
         ]
         ```
--   **GET /api/students/{id}**: Recupera uno studente specifico tramite ID.
+-   **GET /students/{id}**: Recupera uno studente specifico tramite ID.
     -   **Esempio di chiamata con JavaScript (fetch):**
    **PUT /students/{id}**: Aggiorna uno studente esistente tramite ID.
     -   **Esempio di chiamata con JavaScript (fetch):**
@@ -436,7 +450,7 @@ Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/student
             "email": "mario.rossi@example.com"
         }
         ```
--   **POST /api/students**: Crea un nuovo studente.
+-   **POST /students**: Crea un nuovo studente.
     -   **Esempio di chiamata con JavaScript (fetch):**
         ```javascript
    **DELETE /students/{id}**: Elimina uno studente specifico tramite ID.
@@ -456,7 +470,7 @@ Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/student
             }
         });
         ```
-        fetch('http://localhost:8080/api/students', {
+        fetch('http://localhost:8080/students', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -479,10 +493,10 @@ Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/student
             "email": "email@example.com"
         }
         ```
--   **PUT /api/students/{id}**: Aggiorna uno studente esistente tramite ID.
+-   **PUT /students/{id}**: Aggiorna uno studente esistente tramite ID.
     -   **Esempio di chiamata con JavaScript (fetch):**
         ```javascript
-        fetch('http://localhost:8080/api/students/1', {
+        fetch('http://localhost:8080/students/1', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -505,11 +519,11 @@ Gli endpoint per la gestione degli studenti sono disponibili sotto `/api/student
             "email": "nuova.email@example.com"
         }
         ```
--   **DELETE /api/students/{id}**: Elimina uno studente specifico tramite ID.
-- **DELETE /api/students/{id}**: Elimina uno studente specifico tramite ID.
+-   **DELETE /students/{id}**: Elimina uno studente specifico tramite ID.
+- **DELETE /students/{id}**: Elimina uno studente specifico tramite ID.
     -   **Esempio di chiamata con JSON (tramite fetch JavaScript):**
         ```javascript
-        fetch('http://localhost:8080/api/students/1', {
+        fetch('http://localhost:8080/students/1', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'

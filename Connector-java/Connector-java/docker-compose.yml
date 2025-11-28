@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  connector-java:
+    build: .
+    image: connector-java:local
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./docker.env
+    volumes:
+      - ./data:/data
+      # Optional: if you want to mount a local file with credentials and pass its path to the container
+      # - ./secrets/gcp.json:/secrets/gcp.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/students"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: sh -lc 'if [ -n "$GOOGLE_CREDENTIALS_JSON" ]; then echo "$GOOGLE_CREDENTIALS_JSON" > /tmp/gcp-creds.json; export GOOGLE_CREDENTIALS_FILE=/tmp/gcp-creds.json; fi; java $JAVA_OPTS -jar /app/app.jar --google.credentials.path=${GOOGLE_CREDENTIALS_FILE:-} --connector.mode=${connector.mode:-LOCAL}'

@@ -22,7 +22,7 @@ public class StudentController {
     private StudentService studentService;
 
     /**
-     * GET /api/students - Recupera tutti gli studenti
+    * GET /students - Recupera tutti gli studenti
      */
     @GetMapping
     public ResponseEntity<List<StudentDTO>> getAllStudents() {
@@ -35,7 +35,7 @@ public class StudentController {
     }
 
     /**
-     * GET /api/students/{id} - Recupera uno studente per ID
+    * GET /students/{id} - Recupera uno studente per ID
      */
     @GetMapping("/{id}")
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable String id) {
@@ -51,7 +51,7 @@ public class StudentController {
     }
 
     /**
-     * POST /api/students - Crea un nuovo studente
+    * POST /students - Crea un nuovo studente
      */
     @PostMapping
     public ResponseEntity<StudentDTO> createStudent(@Valid @RequestBody StudentRequest studentRequest) {
@@ -64,7 +64,7 @@ public class StudentController {
     }
 
     /**
-     * PUT /api/students/{id} - Aggiorna uno studente esistente
+    * PUT /students/{id} - Aggiorna uno studente esistente
      */
     @PutMapping("/{id}")
     public ResponseEntity<StudentDTO> updateStudent(
@@ -82,7 +82,7 @@ public class StudentController {
     }
 
     /**
-     * DELETE /api/students/{id} - Elimina uno studente
+    * DELETE /students/{id} - Elimina uno studente
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable String id) {
@@ -98,7 +98,7 @@ public class StudentController {
     }
 
     /**
-     * GET /api/students/health - Health check endpoint
+    * GET /students/health - Health check endpoint
      */
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
