@@ -3,7 +3,11 @@ package com.its.statistics.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.validation.constraints.Email;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import jakarta.persistence.Column;
 
 @Entity
 public class Student {
@@ -11,9 +15,21 @@ public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String surname;
-    private String email;
+
+    @NotBlank(message = "Il nome non può essere vuoto")
+    @Size(min = 2, max = 100, message = "Il nome deve avere tra 2 e 100 caratteri")
+        @Column(nullable = false)
+        private String name;
+
+    @NotBlank(message = "Il cognome non può essere vuoto")
+    @Size(min = 2, max = 100, message = "Il cognome deve avere tra 2 e 100 caratteri")
+        @Column(nullable = false)
+        private String surname;
+
+    @NotBlank(message = "L'email è obbligatoria")
+    @Email(message = "L'email non è valida")
+        @Column(nullable = false, unique = false)
+        private String email;
 
     public Student() {
     }

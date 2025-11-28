@@ -1,4 +1,14 @@
+com\its\statistics\dto\StudentRequest.class
 com\its\statistics\ConnectorJavaApplication.class
+com\its\statistics\dto\StudentDTO.class
+com\its\statistics\config\BigQueryConfig.class
+com\its\statistics\controller\MetabaseEmbedController.class
+com\its\statistics\config\ApiKeyFilter.class
 com\its\statistics\repository\StudentRepository.class
+com\its\statistics\service\MetabaseEmbedService.class
+com\its\statistics\service\StudentService.class
 com\its\statistics\controller\StudentController.class
+com\its\statistics\exception\GlobalExceptionHandler.class
+com\its\statistics\controller\BigQueryController.class
 com\its\statistics\model\Student.class
+com\its\statistics\config\CorsConfig.class

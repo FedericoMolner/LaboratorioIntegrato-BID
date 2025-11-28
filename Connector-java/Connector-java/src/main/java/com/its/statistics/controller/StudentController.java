@@ -1,61 +1,107 @@
 package com.its.statistics.controller;
 
-import com.its.statistics.model.Student;
-import com.its.statistics.repository.StudentRepository;
+import com.its.statistics.dto.StudentDTO;
+import com.its.statistics.dto.StudentRequest;
+import com.its.statistics.service.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/students")
+@Validated
+@RequestMapping("/students")
+@CrossOrigin(origins = "*") // Permette a PowerApps di chiamare le API
 public class StudentController {
 
     @Autowired
-    private StudentRepository studentRepository;
+    private StudentService studentService;
 
+    /**
+     * GET /api/students - Recupera tutti gli studenti
+     */
     @GetMapping
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
-        Optional<Student> student = studentRepository.findById(id);
-        return student.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-        Student savedStudent = studentRepository.save(student);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable Long id, @RequestBody Student studentDetails) {
-        Optional<Student> student = studentRepository.findById(id);
-        if (student.isPresent()) {
-            Student existingStudent = student.get();
-            existingStudent.setName(studentDetails.getName());
-            existingStudent.setSurname(studentDetails.getSurname());
-            existingStudent.setEmail(studentDetails.getEmail());
-            Student updatedStudent = studentRepository.save(existingStudent);
-            return ResponseEntity.ok(updatedStudent);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteStudent(@PathVariable Long id) {
+    public ResponseEntity<List<StudentDTO>> getAllStudents() {
         try {
-            studentRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+            List<StudentDTO> students = studentService.getAllStudents();
+            return ResponseEntity.ok(students);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * GET /api/students/{id} - Recupera uno studente per ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<StudentDTO> getStudentById(@PathVariable String id) {
+        try {
+            StudentDTO student = studentService.getStudentById(id);
+            return ResponseEntity.ok(student);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("non trovato")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * POST /api/students - Crea un nuovo studente
+     */
+    @PostMapping
+    public ResponseEntity<StudentDTO> createStudent(@Valid @RequestBody StudentRequest studentRequest) {
+        try {
+            StudentDTO createdStudent = studentService.createStudent(studentRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdStudent);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * PUT /api/students/{id} - Aggiorna uno studente esistente
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<StudentDTO> updateStudent(
+            @PathVariable String id,
+            @Valid @RequestBody StudentRequest studentRequest) {
+        try {
+            StudentDTO updatedStudent = studentService.updateStudent(id, studentRequest);
+            return ResponseEntity.ok(updatedStudent);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("non trovato")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * DELETE /api/students/{id} - Elimina uno studente
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable String id) {
+        try {
+            studentService.deleteStudent(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("non trovato")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * GET /api/students/health - Health check endpoint
+     */
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Student API is running");
     }
 }
