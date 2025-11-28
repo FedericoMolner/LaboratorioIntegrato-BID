@@ -1,22 +1,36 @@
-# Multi-stage Dockerfile
-# Build stage
+# --- STAGE 1: Build ---
 FROM maven:3.9.4-eclipse-temurin-17 as builder
 WORKDIR /workspace
-COPY pom.xml .
-COPY src ./src
-RUN mvn -U -DskipTests clean package -DskipTests
 
-# Runtime stage
+# Copiamo prima solo il pom per sfruttare la cache
+COPY pom.xml .
+# Poi il codice sorgente
+COPY src ./src
+
+# Compiliamo saltando i test per velocità
+RUN mvn clean package -DskipTests
+
+# --- STAGE 2: Runtime ---
 FROM eclipse-temurin:17-jre-jammy
-ARG JAR_FILE=target/connector-java-0.0.1-SNAPSHOT.jar
-COPY --from=builder /workspace/${JAR_FILE} /app/app.jar
 WORKDIR /app
 
-# Values may be provided by environment variables at runtime
-# If using GOOGLE_CREDENTIALS_JSON (string content), it will be written to disk at start
-ENV JAVA_OPTS="-Xms256m -Xmx512m"
+# Copiamo il JAR generato. 
+# L'asterisco *.jar è fondamentale: se cambi versione nel pom.xml, questo continua a funzionare!
+COPY --from=builder /workspace/target/*.jar app.jar
+
+# --- FIX PER LE CREDENZIALI GOOGLE E L'ERRORE BAD SUBSTITUTION ---
+# Invece di scrivere tutto nell'ENTRYPOINT, creiamo uno script bash pulito.
+# Questo script controlla se c'è il JSON delle credenziali e lo salva su file.
+RUN echo '#!/bin/bash' > /app/run.sh && \
+    echo 'if [ -n "$GOOGLE_CREDENTIALS_JSON" ]; then' >> /app/run.sh && \
+    echo '  echo "Trovata variabile GOOGLE_CREDENTIALS_JSON: creo il file temporaneo..."' >> /app/run.sh && \
+    echo '  echo "$GOOGLE_CREDENTIALS_JSON" > /tmp/gcp-creds.json' >> /app/run.sh && \
+    echo '  export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json' >> /app/run.sh && \
+    echo 'fi' >> /app/run.sh && \
+    echo 'exec java -jar /app/app.jar' >> /app/run.sh && \
+    chmod +x /app/run.sh
+
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-lc", "if [ -n \"$GOOGLE_CREDENTIALS_JSON\" ]; then echo \"$GOOGLE_CREDENTIALS_JSON\" > /tmp/gcp-creds.json; export GOOGLE_CREDENTIALS_FILE=/tmp/gcp-creds.json; fi; exec java $JAVA_OPTS -jar /app/app.jar --google.credentials.path=${GOOGLE_CREDENTIALS_FILE:-} --connector.mode=${connector.mode:-LOCAL}"]
-
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Usiamo bash per lanciare lo script, così evitiamo errori di sintassi
+ENTRYPOINT ["/bin/bash", "/app/run.sh"]
